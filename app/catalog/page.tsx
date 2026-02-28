@@ -20,17 +20,23 @@ export default function CatalogPage() {
     try {
       setLoading(true);
       setError(null);
+      console.log('Fetching products for dealer:', dealerId);
+      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+
       const { data, error: err } = await supabase
         .from('products')
         .select('*')
         .eq('dealer_id', dealerId)
         .gt('stock', 0);
 
+      console.log('Supabase response - Data:', data, 'Error:', err);
+
       if (err) throw err;
       setProducts(data || []);
-    } catch (err) {
-      setError('Errore nel caricamento dei prodotti');
-      console.error(err);
+    } catch (err: any) {
+      const errorMsg = err?.message || JSON.stringify(err);
+      setError(`Errore: ${errorMsg}`);
+      console.error('Full error:', err);
     } finally {
       setLoading(false);
     }
