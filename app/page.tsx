@@ -7,7 +7,7 @@ export default function Home() {
         {/* Logo/Title */}
         <div className="space-y-2">
           <h1 className="text-4xl font-bold text-gray-900">🚀 Dloop</h1>
-          <p className="text-lg text-gray-600">Catalogo Prodotti PWA</p>
+          <p className="text-lg text-gray-600">Catalogo Prodotti PWA (v1.1)</p>
         </div>
 
         {/* Status Card */}
