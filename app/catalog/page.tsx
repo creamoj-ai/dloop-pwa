@@ -7,14 +7,38 @@ import { useCart } from '@/lib/store';
 
 export default function CatalogPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [dealerId, setDealerId] = useState<string>('toelettatura-pet');
   const [error, setError] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState<string>('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const cart = useCart();
 
   useEffect(() => {
     fetchProducts();
   }, [dealerId]);
+
+  // Filter products by category and search text
+  useEffect(() => {
+    let filtered = products;
+
+    // Filter by category
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter(p => p.category === categoryFilter);
+    }
+
+    // Filter by search text
+    if (searchText.trim()) {
+      const search = searchText.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(search) ||
+        (p.description?.toLowerCase().includes(search) || false)
+      );
+    }
+
+    setFilteredProducts(filtered);
+  }, [products, categoryFilter, searchText]);
 
   async function fetchProducts() {
     try {
@@ -84,6 +108,43 @@ export default function CatalogPage() {
           </select>
         </div>
 
+        {/* Search & Filter Section */}
+        <div className="mb-8 space-y-4">
+          {/* Search Bar */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Cerca Prodotto:
+            </label>
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Es. Shampoo, Acqua, Crocchette..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
+          </div>
+
+          {/* Category Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Categoria:
+            </label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            >
+              <option value="all">Tutte le Categorie</option>
+              <option value="grocery">🛒 Grocery</option>
+              <option value="pet">🐾 Pet</option>
+              <option value="bevande">🥤 Bevande</option>
+              <option value="integratori">💊 Integratori</option>
+              <option value="organic">🥬 Organic</option>
+              <option value="fashion">👔 Fashion</option>
+            </select>
+          </div>
+        </div>
+
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
@@ -99,13 +160,14 @@ export default function CatalogPage() {
         )}
 
         {/* Products Grid */}
-        {!loading && products.length > 0 && (
+        {!loading && filteredProducts.length > 0 && (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Prodotti Disponibili ({products.length})
+              Prodotti Disponibili ({filteredProducts.length})
+              {searchText && ` - Ricerca: "${searchText}"`}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <div
                   key={product.id}
                   className="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden"
@@ -162,9 +224,13 @@ export default function CatalogPage() {
         )}
 
         {/* Empty State */}
-        {!loading && products.length === 0 && !error && (
+        {!loading && filteredProducts.length === 0 && !error && (
           <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">Nessun prodotto disponibile</p>
+            <p className="text-gray-600 text-lg">
+              {products.length === 0
+                ? 'Nessun prodotto disponibile'
+                : 'Nessun prodotto corrisponde ai filtri selezionati'}
+            </p>
           </div>
         )}
       </div>
