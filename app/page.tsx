@@ -46,6 +46,12 @@ export default function Home() {
           >
             🛒 Carrello
           </Link>
+          <Link
+            href="/history"
+            className="block w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition"
+          >
+            📦 I Miei Ordini
+          </Link>
         </div>
 
         {/* Status */}

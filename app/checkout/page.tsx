@@ -108,6 +108,10 @@ export default function CheckoutPage() {
       const orderId = data[0].id;
       console.log('Order created:', orderId);
 
+      // Save customer phone for order history tracking
+      localStorage.setItem('dloop_customer_phone', formData.phone);
+      localStorage.setItem('dloop_customer_name', formData.name);
+
       // Clear cart
       cart.clearCart();
 
