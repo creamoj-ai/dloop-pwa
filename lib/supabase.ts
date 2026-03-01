@@ -34,3 +34,28 @@ export type Product = {
 export type CartItem = Product & {
   quantity: number;
 };
+
+export type Order = {
+  id: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_address: string;
+  items: string;
+  total_price: number;
+  status: 'PENDING' | 'ASSIGNED' | 'IN_PICKUP' | 'IN_DELIVERY' | 'DELIVERED';
+  assigned_rider_id?: string;
+  assigned_at?: string;
+  pickup_at?: string;
+  delivery_started_at?: string;
+  delivered_at?: string;
+  estimated_arrival?: string;
+  created_at: string;
+};
+
+export type Rider = {
+  id: string;
+  name: string;
+  rating: number;
+  phone: string;
+  status: string;
+};

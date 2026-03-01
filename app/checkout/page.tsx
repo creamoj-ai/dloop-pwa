@@ -74,41 +74,44 @@ export default function CheckoutPage() {
 
       console.log('Creating order with data:', formData);
 
-      // Create order for each item in cart
-      const orderIds: string[] = [];
-      for (const item of cart.items) {
-        const { data, error: err } = await supabase
-          .from('market_orders')
-          .insert([
-            {
-              product_id: item.id,
-              product_name: item.name,
-              customer_name: formData.name,
-              customer_phone: formData.phone,
-              customer_address: formData.address,
-              quantity: item.quantity,
-              unit_price: item.price,
-              total_price: item.price * item.quantity,
-              status: 'pending',
-              source: 'pwa',
-              notes: formData.notes || null,
-            },
-          ])
-          .select();
+      // Create single order with all items
+      const itemsStr = cart.items
+        .map((item) => `${item.name} (x${item.quantity})`)
+        .join(', ');
 
-        if (err) throw err;
-        if (data && data[0]) {
-          orderIds.push(data[0].id);
-        }
+      const totalPrice = cart.items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+
+      const { data, error: err } = await supabase
+        .from('orders')
+        .insert([
+          {
+            customer_name: formData.name,
+            customer_phone: formData.phone,
+            customer_address: formData.address,
+            items: itemsStr,
+            total_price: totalPrice,
+            status: 'PENDING',
+            created_at: new Date().toISOString(),
+          },
+        ])
+        .select();
+
+      if (err) throw err;
+      if (!data || !data[0]) {
+        throw new Error('Errore nella creazione dell\'ordine');
       }
 
-      console.log('Orders created:', orderIds);
+      const orderId = data[0].id;
+      console.log('Order created:', orderId);
 
       // Clear cart
       cart.clearCart();
 
-      // Redirect to success
-      router.push(`/success?orderIds=${orderIds.join(',')}`);
+      // Redirect to order tracking page
+      router.push(`/order/${orderId}`);
     } catch (err: any) {
       console.error('Order creation error:', err);
       setError(err.message || 'Errore nella creazione dell\'ordine');
