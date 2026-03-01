@@ -115,9 +115,13 @@ export default function CatalogPage() {
                     {product.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={product.image_url.trim()}
+                        src={product.image_url.replace(/\s+/g, '')}
                         alt={product.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('Image load failed:', product.image_url);
+                          e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23e5e7eb%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2224%22 fill=%22%239ca3af%22%3E📦%3C/text%3E%3C/svg%3E';
+                        }}
                       />
                     ) : (
                       <span className="text-6xl">📦</span>
