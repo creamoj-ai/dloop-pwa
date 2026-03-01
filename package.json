@@ -15,6 +15,7 @@
   "description": "",
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
+    "@vercel/analytics": "^1.6.1",
     "autoprefixer": "^10.4.27",
     "next": "^16.1.6",
     "next-pwa": "^5.6.0",

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Analytics } from '@vercel/analytics/react';
 import './globals.css';
 
 const APP_NAME = 'Dloop';
@@ -48,6 +49,7 @@ export default function RootLayout({
         <div className="min-h-screen">
           {children}
         </div>
+        <Analytics />
       </body>
     </html>
   );
