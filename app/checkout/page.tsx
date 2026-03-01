@@ -112,6 +112,32 @@ export default function CheckoutPage() {
       localStorage.setItem('dloop_customer_phone', formData.phone);
       localStorage.setItem('dloop_customer_name', formData.name);
 
+      // Send WhatsApp notification (async - don't block checkout)
+      try {
+        const { error: notifyError } = await supabase.functions.invoke(
+          'whatsapp-notify',
+          {
+            body: {
+              customerPhone: formData.phone,
+              customerName: formData.name,
+              orderId: orderId,
+              totalPrice: totalPrice,
+              items: itemsStr,
+            },
+          }
+        );
+
+        if (notifyError) {
+          console.error('WhatsApp notification failed:', notifyError);
+          // Don't block checkout if WhatsApp fails
+        } else {
+          console.log('WhatsApp notification sent successfully');
+        }
+      } catch (notifyErr) {
+        console.error('WhatsApp notification error:', notifyErr);
+        // Silent fail - order was created successfully
+      }
+
       // Clear cart
       cart.clearCart();
 
