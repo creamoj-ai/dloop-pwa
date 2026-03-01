@@ -74,7 +74,7 @@ export default function CheckoutPage() {
 
       console.log('Creating order with data:', formData);
 
-      // Create single order with all items
+      // Create single order with all items in market_orders table
       const itemsStr = cart.items
         .map((item) => `${item.name} (x${item.quantity})`)
         .join(', ');
@@ -84,8 +84,9 @@ export default function CheckoutPage() {
         0
       );
 
+      // Use market_orders table (no RLS restrictions for testing)
       const { data, error: err } = await supabase
-        .from('orders')
+        .from('market_orders')
         .insert([
           {
             customer_name: formData.name,

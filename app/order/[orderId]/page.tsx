@@ -19,11 +19,23 @@ export default function OrderTrackingPage() {
     const fetchOrder = async () => {
       try {
         setLoading(true);
-        const { data, error: fetchError } = await supabase
-          .from('orders')
+        // Try market_orders first (PWA checkout flow), then fall back to orders
+        let { data, error: fetchError } = await supabase
+          .from('market_orders')
           .select('*')
           .eq('id', orderId)
           .single();
+
+        // If not found in market_orders, try orders table
+        if (fetchError && fetchError.code === 'PGRST116') {
+          const result = await supabase
+            .from('orders')
+            .select('*')
+            .eq('id', orderId)
+            .single();
+          data = result.data;
+          fetchError = result.error;
+        }
 
         if (fetchError) {
           setError('Ordine non trovato');
@@ -61,7 +73,7 @@ export default function OrderTrackingPage() {
   useEffect(() => {
     if (!orderId) return;
 
-    const channel = supabase.channel(`orders:${orderId}`);
+    const channel = supabase.channel(`market-orders:${orderId}`);
 
     channel
       .on(
@@ -69,7 +81,7 @@ export default function OrderTrackingPage() {
         {
           event: '*',
           schema: 'public',
-          table: 'orders',
+          table: 'market_orders',
           filter: `id=eq.${orderId}`,
         },
         (payload) => {
