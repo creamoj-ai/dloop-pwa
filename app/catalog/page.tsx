@@ -140,40 +140,11 @@ export default function CatalogPage() {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Dealer Selector */}
-        <div className="mb-8">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Seleziona Dealer:
-          </label>
-          <select
-            value={dealerId}
-            onChange={(e) => setDealerId(e.target.value)}
-            className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-          >
-            <option value="toelettatura-pet">🐾 Toelettatura Pet</option>
-            <option value="piccolo-supermarket">🛒 Piccolo Supermarket</option>
-            <option value="naturasi-vomero">🥬 NaturaSì Vomero</option>
-            <option value="yamamay">👔 Yamamay/Carpisa Cimino</option>
-          </select>
-        </div>
+        {/* Filter Section - Restructured */}
+        <div className="mb-8 bg-white rounded-lg shadow-sm p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">🔍 Filtra Prodotti</h2>
 
-        {/* Search & Filter Section */}
-        <div className="mb-8 space-y-4">
-          {/* Search Bar */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Cerca Prodotto:
-            </label>
-            <input
-              type="text"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Es. Shampoo, Acqua, Crocchette..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-            />
-          </div>
-
-          {/* Category Filter - Dynamic */}
+          {/* 1. Category Filter - First (most important) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Categoria:
@@ -181,7 +152,7 @@ export default function CatalogPage() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full md:w-80 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white"
             >
               <option value="all">Tutte le Categorie</option>
               {availableCategories.length > 0 ? (
@@ -194,6 +165,37 @@ export default function CatalogPage() {
                 <option disabled>Nessuna categoria disponibile</option>
               )}
             </select>
+          </div>
+
+          {/* 2. Dealer Selector - Second */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Seleziona Dealer:
+            </label>
+            <select
+              value={dealerId}
+              onChange={(e) => setDealerId(e.target.value)}
+              className="w-full md:w-80 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white"
+            >
+              <option value="toelettatura-pet">🐾 Toelettatura Pet</option>
+              <option value="piccolo-supermarket">🛒 Piccolo Supermarket</option>
+              <option value="naturasi-vomero">🥬 NaturaSì Vomero</option>
+              <option value="yamamay">👔 Yamamay/Carpisa Cimino</option>
+            </select>
+          </div>
+
+          {/* 3. Search Bar - Third (fine-tuning) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Cerca Prodotto:
+            </label>
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Es. Shampoo, Acqua, Crocchette..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
           </div>
         </div>
 
