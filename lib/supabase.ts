@@ -25,7 +25,7 @@ export type Product = {
   price: number;
   image_url?: string;
   description?: string;
-  stock: number;
+  in_stock: number;
   category: string;
   dealer_id?: string;
   created_at?: string;

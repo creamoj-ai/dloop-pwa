@@ -27,7 +27,7 @@ export default function CatalogPage() {
         .from('products')
         .select('*')
         .eq('dealer_id', dealerId)
-        .gt('stock', 0);
+        .gt('in_stock', 0);
 
       console.log('Supabase response - Data:', data, 'Error:', err);
 
@@ -130,7 +130,7 @@ export default function CatalogPage() {
                         €{product.price.toFixed(2)}
                       </span>
                       <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                        Stock: {product.stock}
+                        Stock: {product.in_stock}
                       </span>
                     </div>
 
