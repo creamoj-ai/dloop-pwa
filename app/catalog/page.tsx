@@ -13,6 +13,7 @@ export default function CatalogPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchText, setSearchText] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [ratings, setRatings] = useState<Map<string, { avg: number; count: number }>>(new Map());
   const cart = useCart();
 
@@ -95,6 +96,16 @@ export default function CatalogPage() {
 
       if (err) throw err;
       setProducts(data || []);
+
+      // Extract available categories from products
+      if (data && data.length > 0) {
+        const categories = [...new Set(data.map(p => p.category).filter(Boolean))].sort();
+        setAvailableCategories(categories);
+        console.log('Available categories for dealer:', dealerId, categories);
+        console.log('Sample products:', data.slice(0, 3));
+      } else {
+        setAvailableCategories([]);
+      }
     } catch (err: any) {
       const errorMsg = err?.message || JSON.stringify(err);
       setError(`Errore: ${errorMsg}`);
@@ -162,7 +173,7 @@ export default function CatalogPage() {
             />
           </div>
 
-          {/* Category Filter */}
+          {/* Category Filter - Dynamic */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Categoria:
@@ -173,12 +184,15 @@ export default function CatalogPage() {
               className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
             >
               <option value="all">Tutte le Categorie</option>
-              <option value="grocery">🛒 Grocery</option>
-              <option value="pet">🐾 Pet</option>
-              <option value="bevande">🥤 Bevande</option>
-              <option value="integratori">💊 Integratori</option>
-              <option value="organic">🥬 Organic</option>
-              <option value="fashion">👔 Fashion</option>
+              {availableCategories.length > 0 ? (
+                availableCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </option>
+                ))
+              ) : (
+                <option disabled>Nessuna categoria disponibile</option>
+              )}
             </select>
           </div>
         </div>
