@@ -18,6 +18,9 @@ export default function CatalogPage() {
 
   useEffect(() => {
     fetchProducts();
+    // Reset filters when dealer changes
+    setCategoryFilter('all');
+    setSearchText('');
   }, [dealerId]);
 
   // Filter products by category and search text
