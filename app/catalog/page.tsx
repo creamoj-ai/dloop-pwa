@@ -17,12 +17,11 @@ export default function CatalogPage() {
   const [ratings, setRatings] = useState<Map<string, { avg: number; count: number }>>(new Map());
   const cart = useCart();
 
+  // Fetch products when category or dealer changes (Category-First Logic)
   useEffect(() => {
     fetchProducts();
-    // Reset filters when dealer changes
-    setCategoryFilter('all');
-    setSearchText('');
-  }, [dealerId]);
+    setSearchText(''); // Reset search when filters change
+  }, [categoryFilter, dealerId]);
 
   // Filter products by category and search text
   useEffect(() => {
@@ -83,25 +82,33 @@ export default function CatalogPage() {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching products for dealer:', dealerId);
-      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.log('Fetching products - Category:', categoryFilter, 'Dealer:', dealerId);
 
-      const { data, error: err } = await supabase
-        .from('products')
-        .select('*')
-        .eq('dealer_id', dealerId)
-        .gt('in_stock', 0);
+      // Build query: Category-First Logic
+      let query = supabase.from('products').select('*').gt('in_stock', 0);
+
+      // 1. Filter by category (if not 'all')
+      if (categoryFilter !== 'all') {
+        query = query.eq('category', categoryFilter);
+      }
+
+      // 2. Filter by dealer (if not 'all')
+      if (dealerId !== 'all') {
+        query = query.eq('dealer_id', dealerId);
+      }
+
+      const { data, error: err } = await query;
 
       console.log('Supabase response - Data:', data, 'Error:', err);
 
       if (err) throw err;
       setProducts(data || []);
 
-      // Extract available categories from products
+      // Extract available categories globally (from all dealers)
       if (data && data.length > 0) {
         const categories = [...new Set(data.map(p => p.category).filter(Boolean))].sort();
         setAvailableCategories(categories);
-        console.log('Available categories for dealer:', dealerId, categories);
+        console.log('Available categories (global):', categories);
         console.log('Sample products:', data.slice(0, 3));
       } else {
         setAvailableCategories([]);
