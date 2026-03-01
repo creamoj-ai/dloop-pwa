@@ -110,9 +110,18 @@ export default function CatalogPage() {
                   key={product.id}
                   className="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden"
                 >
-                  {/* Image Placeholder */}
-                  <div className="bg-gray-200 h-48 flex items-center justify-center">
-                    <span className="text-6xl">📦</span>
+                  {/* Product Image */}
+                  <div className="bg-gray-200 h-48 flex items-center justify-center overflow-hidden">
+                    {product.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={product.image_url.trim()}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-6xl">📦</span>
+                    )}
                   </div>
 
                   {/* Content */}
