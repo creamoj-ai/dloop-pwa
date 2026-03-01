@@ -13,6 +13,7 @@ export default function CatalogPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchText, setSearchText] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [ratings, setRatings] = useState<Map<string, { avg: number; count: number }>>(new Map());
   const cart = useCart();
 
   useEffect(() => {
@@ -39,6 +40,40 @@ export default function CatalogPage() {
 
     setFilteredProducts(filtered);
   }, [products, categoryFilter, searchText]);
+
+  // Fetch product reviews and calculate average ratings
+  useEffect(() => {
+    async function fetchReviews() {
+      if (products.length === 0) return;
+
+      try {
+        const { data } = await supabase
+          .from('product_reviews')
+          .select('product_id, rating');
+
+        if (!data) return;
+
+        // Calculate average rating per product
+        const ratingMap = new Map<string, { avg: number; count: number }>();
+
+        products.forEach(product => {
+          const productReviews = data.filter(r => r.product_id === product.id);
+          if (productReviews.length > 0) {
+            const avgRating =
+              productReviews.reduce((sum, r) => sum + r.rating, 0) /
+              productReviews.length;
+            ratingMap.set(product.id, { avg: avgRating, count: productReviews.length });
+          }
+        });
+
+        setRatings(ratingMap);
+      } catch (err) {
+        console.error('Error fetching reviews:', err);
+      }
+    }
+
+    fetchReviews();
+  }, [products]);
 
   async function fetchProducts() {
     try {
@@ -208,6 +243,19 @@ export default function CatalogPage() {
                         Stock: {product.in_stock}
                       </span>
                     </div>
+
+                    {/* Rating */}
+                    {ratings.get(product.id) && (
+                      <div className="flex items-center space-x-2 pt-2 border-t">
+                        <span className="text-yellow-500 text-lg">⭐</span>
+                        <span className="font-semibold text-gray-900">
+                          {ratings.get(product.id)!.avg.toFixed(1)}
+                        </span>
+                        <span className="text-gray-500 text-sm">
+                          ({ratings.get(product.id)!.count} rec.)
+                        </span>
+                      </div>
+                    )}
 
                     {/* Add to Cart Button */}
                     <button

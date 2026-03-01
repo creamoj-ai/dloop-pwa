@@ -59,3 +59,14 @@ export type Rider = {
   phone: string;
   status: string;
 };
+
+export type Review = {
+  id: string;
+  product_id: string;
+  order_id?: string;
+  customer_name: string;
+  customer_phone?: string;
+  rating: number;
+  comment?: string;
+  created_at: string;
+};
