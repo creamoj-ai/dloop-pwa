@@ -84,9 +84,9 @@ export default function CheckoutPage() {
         0
       );
 
-      // Use market_orders table (no RLS restrictions for testing)
+      // Use pwa_orders table (simple schema, no RLS)
       const { data, error: err } = await supabase
-        .from('market_orders')
+        .from('pwa_orders')
         .insert([
           {
             customer_name: formData.name,
