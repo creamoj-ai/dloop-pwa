@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Hardcoded values (fallback if env vars fail)
 const FALLBACK_URL = 'https://aqpwfurradxbnqvycvkm.supabase.co';
-const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcHdmdXJyYWR4Ym5xdnljdmttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAwNDI0NzgsImV4cCI6MTg5NzgwOTQ3OH0.WlbMVlf5Bw9gYDzKhNvXPzPBp4SFk_YqBE5rK5qLqXo';
+const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcHdmdXJyYWR4Ym5xdnljdmttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMTk3NzAsImV4cCI6MjA4NTY5NTc3MH0.Ekhco06o8_88e8tQJHm4EjEa0HOQv8Z-gAHa1busvog';
 
 // Get values and clean them (trim whitespace)
 const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || FALLBACK_URL).trim();
