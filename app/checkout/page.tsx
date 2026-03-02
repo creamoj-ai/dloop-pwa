@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
+import { StripeCheckout } from '@/components/StripeCheckout';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -12,6 +13,8 @@ export default function CheckoutPage() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -74,7 +77,7 @@ export default function CheckoutPage() {
 
       console.log('Creating order with data:', formData);
 
-      // Create single order with all items in market_orders table
+      // Create single order with all items
       const itemsStr = cart.items
         .map((item) => `${item.name} (x${item.quantity})`)
         .join(', ');
@@ -84,7 +87,7 @@ export default function CheckoutPage() {
         0
       );
 
-      // Use pwa_orders table (simple schema, no RLS)
+      // Step 1: Create order in pwa_orders table (PENDING status)
       const { data, error: err } = await supabase
         .from('pwa_orders')
         .insert([
@@ -95,6 +98,7 @@ export default function CheckoutPage() {
             items: itemsStr,
             total_price: totalPrice,
             status: 'PENDING',
+            payment_status: 'PENDING',
             created_at: new Date().toISOString(),
           },
         ])
@@ -105,44 +109,17 @@ export default function CheckoutPage() {
         throw new Error('Errore nella creazione dell\'ordine');
       }
 
-      const orderId = data[0].id;
-      console.log('Order created:', orderId);
+      const newOrderId = data[0].id;
+      console.log('Order created:', newOrderId);
 
-      // Save customer phone for order history tracking
+      // Save to local storage
       localStorage.setItem('dloop_customer_phone', formData.phone);
       localStorage.setItem('dloop_customer_name', formData.name);
 
-      // Send WhatsApp notification (async - don't block checkout)
-      try {
-        const { error: notifyError } = await supabase.functions.invoke(
-          'whatsapp-notify',
-          {
-            body: {
-              customerPhone: formData.phone,
-              customerName: formData.name,
-              orderId: orderId,
-              totalPrice: totalPrice,
-              items: itemsStr,
-            },
-          }
-        );
+      // Set order ID and show payment form
+      setOrderId(newOrderId);
+      setShowPayment(true);
 
-        if (notifyError) {
-          console.error('WhatsApp notification failed:', notifyError);
-          // Don't block checkout if WhatsApp fails
-        } else {
-          console.log('WhatsApp notification sent successfully');
-        }
-      } catch (notifyErr) {
-        console.error('WhatsApp notification error:', notifyErr);
-        // Silent fail - order was created successfully
-      }
-
-      // Clear cart
-      cart.clearCart();
-
-      // Redirect to order tracking page
-      router.push(`/order/${orderId}`);
     } catch (err: any) {
       console.error('Order creation error:', err);
       setError(err.message || 'Errore nella creazione dell\'ordine');
@@ -150,6 +127,102 @@ export default function CheckoutPage() {
       setLoading(false);
     }
   };
+
+  const handlePaymentSuccess = async (sessionId: string) => {
+    console.log('Payment successful:', sessionId);
+
+    // Clear cart
+    cart.clearCart();
+
+    // Redirect to success page
+    router.push(`/success?order_id=${orderId}`);
+  };
+
+  const handlePaymentError = (error: string) => {
+    setError(error);
+    setShowPayment(false);
+  };
+
+  // Render payment form if order created
+  if (showPayment && orderId) {
+    const itemsStr = cart.items
+      .map((item) => `${item.name} (x${item.quantity})`)
+      .join(', ');
+    const totalPrice = cart.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-md">
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            <Link href="/" className="text-2xl font-bold text-blue-600">
+              🚀 Dloop
+            </Link>
+          </div>
+        </header>
+
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              💳 Pagamento Sicuro
+            </h2>
+
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                ✓ Pagamento crittografato e protetto con Stripe
+              </p>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p className="text-red-800">{error}</p>
+                <button
+                  onClick={() => {
+                    setShowPayment(false);
+                    setError(null);
+                    setOrderId(null);
+                  }}
+                  className="mt-2 text-red-600 hover:text-red-700 font-semibold"
+                >
+                  ← Torna ai dettagli ordine
+                </button>
+              </div>
+            )}
+
+            <StripeCheckout
+              orderId={orderId}
+              customerName={formData.name}
+              customerPhone={formData.phone}
+              customerAddress={formData.address}
+              totalPrice={totalPrice}
+              itemsDescription={itemsStr}
+              onPaymentSuccess={handlePaymentSuccess}
+              onPaymentError={handlePaymentError}
+            />
+
+            {/* Order Summary */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h3 className="font-semibold text-gray-900 mb-4">Riepilogo</h3>
+              <div className="space-y-2 text-sm">
+                <p className="flex justify-between">
+                  <span className="text-gray-600">Articoli:</span>
+                  <span className="font-semibold">{cart.items.length}</span>
+                </p>
+                <p className="flex justify-between">
+                  <span className="text-gray-600">Totale:</span>
+                  <span className="font-semibold text-lg text-blue-600">
+                    €{totalPrice.toFixed(2)}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -169,7 +242,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Dettagli Consegna
+                📍 Dettagli Consegna
               </h2>
 
               {error && (
@@ -248,7 +321,7 @@ export default function CheckoutPage() {
                   disabled={loading}
                   className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition mt-6"
                 >
-                  {loading ? 'Creazione in corso...' : '✅ CREA ORDINE'}
+                  {loading ? 'Creazione in corso...' : '→ Procedi al Pagamento'}
                 </button>
               </form>
             </div>
@@ -258,7 +331,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 h-fit sticky top-20">
               <h2 className="text-xl font-bold text-gray-900 mb-6">
-                Riepilogo Ordine
+                🛍️ Riepilogo Ordine
               </h2>
 
               {/* Items */}
@@ -297,6 +370,12 @@ export default function CheckoutPage() {
                     €{cart.total().toFixed(2)}
                   </span>
                 </div>
+              </div>
+
+              {/* Trust Badge */}
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg text-center">
+                <p className="text-xs text-gray-600 mb-2">🔒 Pagamento Sicuro</p>
+                <p className="text-xs text-gray-500">Crittografato con Stripe</p>
               </div>
 
               {/* Back Button */}
