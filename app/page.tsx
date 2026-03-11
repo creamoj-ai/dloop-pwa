@@ -35,6 +35,12 @@ export default function Home() {
             >
               🛍️ Ordina Ora
             </Link>
+            <Link
+              href="/chat"
+              className="bg-yellow-400 text-blue-900 px-8 py-4 rounded-lg font-bold text-lg hover:bg-yellow-300 transition shadow-lg"
+            >
+              💬 Chat con Bot
+            </Link>
             <a
               href="#dealer"
               className="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white/10 transition"
